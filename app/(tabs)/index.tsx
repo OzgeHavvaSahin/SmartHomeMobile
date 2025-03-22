@@ -1,27 +1,24 @@
-import { View, Text , StyleSheet} from 'react-native'
-import React from 'react'
+import React from "react";
+import { View, StyleSheet, ScrollView, Alert } from "react-native";
+import Room from "../../components/Room";
 
-const app = () => {
+const HomeScreen = () => {
+  // Oda listesi (bunu daha sonra dinamik hale getirebiliriz)
+  const rooms = ["Salon", "Mutfak", "Yatak Odası"];
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text} >Hello</Text>
-    </View>
-  )
-}
-
-export default app
+    <ScrollView contentContainerStyle={styles.container}>
+      {rooms.map((room, index) => (
+        <Room key={index} name={room} onAddDevice={() => Alert.alert(`${room} odasına cihaz ekle`)} />
+      ))}
+    </ScrollView>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-  },
-  text: {
-    fontSize: 20,
-    color: '#000000',
+    padding: 16,
   },
 });
 
+export default HomeScreen;
