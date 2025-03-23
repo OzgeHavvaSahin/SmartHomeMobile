@@ -1,9 +1,7 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import HomeScreen from '../HomeScreen';
+// App.tsx
+import React from 'react';
+import AppNavigator from '../../navigation/AppNavigator'; // Ensure the file '../navigation/AppNavigator.tsx' exists or adjust the path
 
 export default function App() {
-    return (
-        <HomeScreen></HomeScreen>
-    );
+  return <AppNavigator />;
 }

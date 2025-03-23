@@ -1,10 +1,41 @@
+// src/screens/HomeScreen.tsx
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Modal, FlatList } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../navigation/AppNavigator';
 import Room from "../components/Room";
-import { Ionicons } from '@expo/vector-icons'; // Make sure to install expo-vector-icons
+import { DeviceType } from "../components/DeviceCard";
 
+// Define the interface for our navigation prop
+type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
+
+// Define the interfaces for our data structure
+interface Device {
+  id: string;
+  name: string;
+  type: DeviceType;
+  description: string;
+  isActive: boolean;
+  roomId: string;
+}
+
+interface Room {
+  id: string;
+  name: string;
+  houseId: string;
+}
+
+interface House {
+  id: string;
+  name: string;
+  address: string;
+}
 
 const HomeScreen: React.FC = () => {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
+
   // State for houses, rooms, devices, and selected house
   const [houses, setHouses] = useState<House[]>([
     { id: "1", name: "Ana Ev", address: "İstanbul, Kadıköy" },
@@ -30,62 +61,112 @@ const HomeScreen: React.FC = () => {
     {
       id: "1",
       name: "Ana Lamba",
+      type: "light",
       description: "Phillips Hue Akıllı Ampül",
-      image: require("../assets/images/robot.png"), // Ensure these images exist
       isActive: true,
       roomId: "1", // Oturma Odası in Ana Ev
     },
     {
       id: "2",
-      name: "TV",
-      description: "Samsung Smart TV",
-      image: require("../assets/images/robot.png"),
-      isActive: false,
+      name: "Kapı Sensörü",
+      type: "doorSensor",
+      description: "Ana Giriş Kapısı",
+      isActive: true, // true means closed for sensors
       roomId: "1", // Oturma Odası in Ana Ev
     },
     {
       id: "3",
-      name: "Buzdolabı",
-      description: "LG Smart Refrigerator",
-      image: require("../assets/images/robot.png"),
+      name: "Pencere Sensörü",
+      type: "windowSensor",
+      description: "Balkon Penceresi",
+      isActive: false, // false means open for sensors
+      roomId: "1", // Oturma Odası in Ana Ev
+    },
+    {
+      id: "4",
+      name: "Güvenlik Kamerası",
+      type: "camera",
+      description: "Salon Köşe Kamera",
+      isActive: true,
+      roomId: "1", // Oturma Odası in Ana Ev
+    },
+    {
+      id: "5",
+      name: "Mutfak Lambası",
+      type: "light",
+      description: "Xiaomi Akıllı Ampül",
+      isActive: false,
+      roomId: "2", // Mutfak in Ana Ev
+    },
+    {
+      id: "6",
+      name: "Arka Kapı Sensörü",
+      type: "doorSensor",
+      description: "Mutfak Arka Kapı",
       isActive: true,
       roomId: "2", // Mutfak in Ana Ev
     },
     {
-      id: "4",
-      name: "Klima",
-      description: "Arçelik Inverter Klima",
-      image: require("../assets/images/robot.png"),
+      id: "7",
+      name: "Yatak Odası Lambası",
+      type: "light",
+      description: "IKEA Trådfri",
+      isActive: false,
+      roomId: "3", // Yatak Odası in Ana Ev
+    },
+    {
+      id: "8",
+      name: "Yazlık Kamera",
+      type: "camera",
+      description: "Dış Mekan Kamerası",
       isActive: true,
       roomId: "5", // Balkon in Yazlık Ev
     },
-    {
-      id: "5",
-      name: "Tavan Vantilatörü",
-      description: "Smart Fan",
-      image: require("../assets/images/robot.png"),
-      isActive: false,
-      roomId: "6", // Salon in Yazlık Ev
-    },
-    {
-      id: "6",
-      name: "Projeksiyon",
-      description: "Epson Projeksiyon",
-      image: require("../assets/images/robot.png"),
-      isActive: true,
-      roomId: "7", // Oturma Alanı in Ofis
-    },
   ]);
 
-  // Toggle device active status
-  const handleToggleDevice = (deviceId: string) => {
-    setDevices(
-      devices.map((device) =>
-        device.id === deviceId
-          ? { ...device, isActive: !device.isActive }
-          : device
-      )
-    );
+  // Navigate to appropriate device details screen based on device type
+  const handleNavigateToDeviceDetails = (deviceId: string) => {
+    // Find the device to get its info
+    const device = devices.find(d => d.id === deviceId);
+    
+    if (device) {
+      switch (device.type) {
+        // case 'light':
+        //   navigation.navigate('LightControl', { 
+        //     deviceId: device.id,
+        //     deviceName: device.name,
+        //     isOn: device.isActive
+        //   });
+        //   break;
+          
+        case 'doorSensor':
+          navigation.navigate('DoorControl', { 
+            deviceId: device.id,
+            deviceName: device.name,
+            isOpen: !device.isActive // Note: For sensors, isActive=true means closed
+          });
+          break;
+          
+        case 'windowSensor':
+          navigation.navigate('WindowControl', { 
+            deviceId: device.id,
+            deviceName: device.name,
+            isOpen: !device.isActive // Note: For sensors, isActive=true means closed
+          });
+          break;
+          
+        // case 'camera':
+        //   navigation.navigate('CameraView', { 
+        //     deviceId: device.id,
+        //     deviceName: device.name,
+        //     isActive: device.isActive
+        //   });
+        //   break;
+          
+        default:
+          console.warn(`No specific screen for device type: ${device.type}`);
+      }
+    }
   };
 
   // Add a new device to a room (this would normally open a form)
@@ -131,7 +212,7 @@ const HomeScreen: React.FC = () => {
             name={room.name}
             devices={getDevicesForRoom(room.id)}
             onAddDevice={() => handleAddDevice(room.id)}
-            onToggleDevice={handleToggleDevice}
+            onNavigateToDeviceDetails={handleNavigateToDeviceDetails}
           />
         ))}
         

@@ -1,25 +1,32 @@
+// src/components/Room.tsx
 import React from "react";
 import { View, Text, StyleSheet, Button, FlatList } from "react-native";
-import DeviceCard from "./DeviceCard"; // Adjust the import path as needed
+import DeviceCard, { DeviceType } from "./DeviceCard"; // Import the updated DeviceCard
 
 // Define the Device interface
 interface Device {
   id: string;
   name: string;
+  type: DeviceType;
   description: string;
-  image: any; // For a real app, use a more specific type
   isActive: boolean;
+  roomId: string;
 }
 
-// Update the Room props to include devices
+// Update the Room props
 interface RoomProps {
   name: string;
   devices: Device[];
   onAddDevice: () => void;
-  onToggleDevice: (deviceId: string) => void;
+  onNavigateToDeviceDetails: (deviceId: string) => void;
 }
 
-const Room: React.FC<RoomProps> = ({ name, devices, onAddDevice, onToggleDevice }) => {
+const Room: React.FC<RoomProps> = ({ 
+  name, 
+  devices, 
+  onAddDevice, 
+  onNavigateToDeviceDetails
+}) => {
   return (
     <View style={styles.container}>
       {/* Room Title */}
@@ -35,11 +42,12 @@ const Room: React.FC<RoomProps> = ({ name, devices, onAddDevice, onToggleDevice 
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <DeviceCard
+                id={item.id}
                 name={item.name}
+                type={item.type}
                 description={item.description}
-                image={item.image}
                 isActive={item.isActive}
-                onPress={() => onToggleDevice(item.id)}
+                onNavigateToDetails={onNavigateToDeviceDetails}
               />
             )}
             scrollEnabled={false} // Prevents nested scrolling issues
