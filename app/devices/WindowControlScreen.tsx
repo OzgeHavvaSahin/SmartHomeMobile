@@ -1,4 +1,4 @@
-// src/screens/DoorControlScreen.tsx
+// app/(devices)/window.tsx
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
@@ -10,36 +10,30 @@ import {
   Image 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, router } from 'expo-router';
 
-// For type checking with React Navigation
-type DoorControlProps = {
-  route?: {
-    params: {
-      deviceId: string;
-      deviceName: string;
-      isOpen: boolean;
-    }
-  };
-  navigation?: any;
-};
-
-const DoorControlScreen: React.FC<DoorControlProps> = ({ route, navigation }) => {
-  // If we don't receive route params, use these defaults
+export default function WindowControlScreen() {
+  // Get params from Expo Router
+  const params = useLocalSearchParams();
+  
+  // Define defaults in case params are missing
   const defaultParams = {
-    deviceId: '1',
-    deviceName: 'Ana Giriş Kapısı',
-    isOpen: false
+    id: '1',
+    name: 'Balkon Penceresi',
+    isOpen: 'false'
   };
   
-  // Use params from navigation or defaults
-  const params = route?.params || defaultParams;
+  // Use params or defaults
+  const deviceId = params.id as string || defaultParams.id;
+  const deviceName = params.name as string || defaultParams.name;
+  const initialIsOpen = params.isOpen === 'true';
   
-  // State to track door status
-  const [isOpen, setIsOpen] = useState(params.isOpen);
+  // State to track window status
+  const [isOpen, setIsOpen] = useState(initialIsOpen);
   const [lastToggled, setLastToggled] = useState<Date | null>(null);
 
-  // Toggle door status
-  const toggleDoor = () => {
+  // Toggle window status
+  const toggleWindow = () => {
     setIsOpen(!isOpen);
     setLastToggled(new Date());
   };
@@ -57,11 +51,7 @@ const DoorControlScreen: React.FC<DoorControlProps> = ({ route, navigation }) =>
 
   // Go back to previous screen
   const handleGoBack = () => {
-    if (navigation) {
-      navigation.goBack();
-    } else {
-      console.log('Go back pressed');
-    }
+    router.back();
   };
 
   return (
@@ -73,26 +63,26 @@ const DoorControlScreen: React.FC<DoorControlProps> = ({ route, navigation }) =>
         <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Kapı Kontrolü</Text>
+        <Text style={styles.headerTitle}>Pencere Kontrolü</Text>
         <View style={styles.placeholderRight} />
       </View>
       
       {/* Device name */}
-      <Text style={styles.deviceName}>{params.deviceName}</Text>
+      <Text style={styles.deviceName}>{deviceName}</Text>
       
       {/* Status visualization */}
       <View style={styles.statusContainer}>
         <Image 
           source={isOpen 
-            ? require('../assets/images/door-open.png') 
-            : require('../assets/images/door-closed.png')} 
-          style={styles.doorImage} 
+            ? require('../../assets/images/window-open.png') 
+            : require('../../assets/images/window-closed.png')} 
+          style={styles.windowImage} 
         />
         <Text style={[
           styles.statusText, 
           isOpen ? styles.openText : styles.closedText
         ]}>
-          {isOpen ? 'Kapı Açık' : 'Kapı Kapalı'}
+          {isOpen ? 'Pencere Açık' : 'Pencere Kapalı'}
         </Text>
       </View>
       
@@ -113,7 +103,7 @@ const DoorControlScreen: React.FC<DoorControlProps> = ({ route, navigation }) =>
         
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Cihaz ID:</Text>
-          <Text style={styles.detailValue}>{params.deviceId}</Text>
+          <Text style={styles.detailValue}>{deviceId}</Text>
         </View>
         
         <View style={styles.detailRow}>
@@ -125,25 +115,25 @@ const DoorControlScreen: React.FC<DoorControlProps> = ({ route, navigation }) =>
       {/* Toggle button */}
       <TouchableOpacity 
         style={[styles.toggleButton, isOpen ? styles.closeButton : styles.openButton]} 
-        onPress={toggleDoor}
+        onPress={toggleWindow}
       >
         <Text style={styles.toggleButtonText}>
-          {isOpen ? 'Kapıyı Kapat' : 'Kapıyı Aç'}
+          {isOpen ? 'Pencereyi Kapat' : 'Pencereyi Aç'}
         </Text>
       </TouchableOpacity>
       
-      {/* Security warning when door is open */}
+      {/* Safety warning when window is open */}
       {isOpen && (
         <View style={styles.warningContainer}>
           <Ionicons name="warning" size={20} color="#FFA500" />
           <Text style={styles.warningText}>
-            Açık kapılar güvenlik riski oluşturabilir. Evin güvenliğinden emin olun.
+            Açık pencereler güvenlik riski oluşturabilir.
           </Text>
         </View>
       )}
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -183,7 +173,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 20,
   },
-  doorImage: {
+  windowImage: {
     width: 150,
     height: 150,
     marginBottom: 16,
@@ -279,5 +269,3 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
-
-export default DoorControlScreen;
