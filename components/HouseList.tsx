@@ -5,7 +5,20 @@ import { Ionicons } from '@expo/vector-icons';
 import AddHomeButton from './AddHomeButton';
 import RoommateList from './RommateList';
 
+// Define interfaces
+interface Roommate {
+  id: string;
+  name: string;
+  email: string;
+  photoUrl: string;
+}
 
+interface House {
+  id: string;
+  name: string;
+  address: string;
+  roommates: Roommate[];
+}
 
 interface NewHouse {
   name: string;
@@ -15,13 +28,18 @@ interface NewHouse {
 // Props for the HouseList component
 interface HouseListProps {
   houses: House[];
-  onAddHouse?: (house: NewHouse) => void;
+  onAddHouse: (house: NewHouse) => Promise<boolean>;
+  isLoading?: boolean;
 }
 
-export default function HouseList({ houses, onAddHouse }: HouseListProps) {
-  const handleAddHouse = (newHouse: NewHouse) => {
-    if (onAddHouse) {
-      onAddHouse(newHouse);
+export default function HouseList({ houses, onAddHouse, isLoading = false }: HouseListProps) {
+  // Pass the async function through
+  const handleAddHouse = async (newHouse: NewHouse): Promise<boolean> => {
+    try {
+      return await onAddHouse(newHouse);
+    } catch (error) {
+      console.error('Error in handleAddHouse:', error);
+      return false;
     }
   };
 
@@ -45,8 +63,11 @@ export default function HouseList({ houses, onAddHouse }: HouseListProps) {
         </View>
       ))}
       
-      {/* Use the new AddHomeButton component */}
-      <AddHomeButton onAddHouse={handleAddHouse} />
+      {/* Use the AddHomeButton with async handling */}
+      <AddHomeButton 
+        onAddHouse={handleAddHouse} 
+        disabled={isLoading}
+      />
     </View>
   );
 }

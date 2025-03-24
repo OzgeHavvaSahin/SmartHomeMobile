@@ -7,14 +7,58 @@ import {
   Image, 
   ScrollView, 
   TouchableOpacity,
-  SafeAreaView
+  SafeAreaView,
+  ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import HouseList from '../../components/HouseList';
 
+// Define the interfaces for our data structure
+interface Roommate {
+  id: string;
+  name: string;
+  email: string;
+  photoUrl: string;
+}
+
+interface House {
+  id: string;
+  name: string;
+  address: string;
+  roommates: Roommate[];
+}
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  photoUrl: string;
+  houses: House[];
+}
+
+// Mock API call to add a house
+const apiAddHouse = async (userId: string, houseData: { name: string; address: string }): Promise<House> => {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  // Create a new house with a unique ID
+  const newHouse: House = {
+    id: String(Date.now()),
+    name: houseData.name,
+    address: houseData.address,
+    roommates: []
+  };
+  
+  // In a real app, this would be a fetch call to your API
+  console.log(`Adding house ${newHouse.name} for user ${userId}`);
+  
+  // Return the created house (simulating API response)
+  return newHouse;
+};
+
 export default function ProfileScreen() {
-  // Mock user data - in a real app, this would come from your auth/API system
-  const [user] = useState<User>({
+  // Mock user data
+  const [user, setUser] = useState<User>({
     id: '1',
     name: 'Ahmet Yılmaz',
     email: 'ahmet.yilmaz@example.com',
@@ -60,6 +104,35 @@ export default function ProfileScreen() {
       }
     ]
   });
+  
+  // Loading state
+  const [isAddingHouse, setIsAddingHouse] = useState(false);
+
+  // Asynchronous function to handle adding a new house
+  const handleAddHouse = async (newHouse: { name: string; address: string }): Promise<boolean> => {
+    try {
+      // Set loading state
+      setIsAddingHouse(true);
+      
+      // Call the API (mock)
+      const addedHouse = await apiAddHouse(user.id, newHouse);
+      
+      // Update the user's houses list with the new house from API
+      setUser(prevUser => ({
+        ...prevUser,
+        houses: [...prevUser.houses, addedHouse]
+      }));
+      
+      console.log('House added successfully:', addedHouse);
+      return true; // Success
+    } catch (error) {
+      console.error('Failed to add house:', error);
+      return false; // Failure
+    } finally {
+      // Reset loading state
+      setIsAddingHouse(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -78,16 +151,21 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
         
-        {/* Houses Section as a Separate Component */}
-        <HouseList houses={user.houses} />
+        {/* Houses Section with loading indicator */}
+        {isAddingHouse && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#4CAF50" />
+            <Text style={styles.loadingText}>Ev ekleniyor...</Text>
+          </View>
+        )}
         
-        {/* Settings Section */}
-        <View style={styles.section}>
-      
-          <TouchableOpacity style={styles.logoutButton}>
-            <Text style={styles.logoutButtonText}>Çıkış Yap</Text>
-          </TouchableOpacity>
-        </View>
+        <HouseList 
+          houses={user.houses} 
+          onAddHouse={handleAddHouse}
+          isLoading={isAddingHouse}
+        />
+        
+        {/* Rest of your component remains the same */}
       </ScrollView>
     </SafeAreaView>
   );
@@ -177,4 +255,17 @@ const styles = StyleSheet.create({
     color: '#F44336',
     fontWeight: '500',
   },
+  loadingContainer: {
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 8,
+    margin: 16,
+  },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 16,
+    color: '#666',
+  }
 });

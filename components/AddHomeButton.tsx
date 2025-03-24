@@ -10,7 +10,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -21,40 +22,62 @@ interface NewHouse {
 }
 
 interface AddHomeButtonProps {
-  onAddHouse: (house: NewHouse) => void;
+  onAddHouse: (house: NewHouse) => Promise<boolean>;
+  disabled?: boolean;
 }
 
-export default function AddHomeButton({ onAddHouse }: AddHomeButtonProps) {
+export default function AddHomeButton({ onAddHouse, disabled = false }: AddHomeButtonProps) {
   const [modalVisible, setModalVisible] = useState(false);
   const [newHouseName, setNewHouseName] = useState('');
   const [newHouseAddress, setNewHouseAddress] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleAddHouse = () => {
+  const handleAddHouse = async () => {
+    // Validate inputs
     if (newHouseName.trim() === '' || newHouseAddress.trim() === '') {
-      // You could show an error message here
+      setError('Lütfen tüm alanları doldurun.');
       return;
     }
 
-    // Create the new house object
-    const newHouse = {
-      name: newHouseName,
-      address: newHouseAddress,
-    };
+    setError(null);
+    setIsSubmitting(true);
 
-    // Call the callback function
-    onAddHouse(newHouse);
+    try {
+      // Create the new house object
+      const newHouse = {
+        name: newHouseName,
+        address: newHouseAddress,
+      };
 
-    // Reset the form and close the modal
-    setNewHouseName('');
-    setNewHouseAddress('');
-    setModalVisible(false);
+      // Call the async callback function
+      const success = await onAddHouse(newHouse);
+
+      if (success) {
+        // Reset the form and close the modal
+        setNewHouseName('');
+        setNewHouseAddress('');
+        setModalVisible(false);
+      } else {
+        setError('Ev eklenirken bir hata oluştu. Lütfen tekrar deneyin.');
+      }
+    } catch (error) {
+      console.error('Error in handleAddHouse:', error);
+      setError('Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <>
       <TouchableOpacity 
-        style={styles.addHouseButton}
+        style={[
+          styles.addHouseButton,
+          disabled && styles.disabledButton
+        ]}
         onPress={() => setModalVisible(true)}
+        disabled={disabled}
       >
         <Ionicons name="add-circle-outline" size={20} color="#4CAF50" style={styles.addIcon} />
         <Text style={styles.addHouseButtonText}>Yeni Ev Ekle</Text>
@@ -75,6 +98,12 @@ export default function AddHomeButton({ onAddHouse }: AddHomeButtonProps) {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Yeni Ev Ekle</Text>
               
+              {error && (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              )}
+              
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Ev Adı</Text>
                 <TextInput
@@ -82,6 +111,7 @@ export default function AddHomeButton({ onAddHouse }: AddHomeButtonProps) {
                   value={newHouseName}
                   onChangeText={setNewHouseName}
                   placeholder="Örn: Ana Ev, Yazlık Ev"
+                  editable={!isSubmitting}
                 />
               </View>
               
@@ -93,6 +123,7 @@ export default function AddHomeButton({ onAddHouse }: AddHomeButtonProps) {
                   onChangeText={setNewHouseAddress}
                   placeholder="Örn: İstanbul, Kadıköy"
                   multiline
+                  editable={!isSubmitting}
                 />
               </View>
               
@@ -100,15 +131,21 @@ export default function AddHomeButton({ onAddHouse }: AddHomeButtonProps) {
                 <TouchableOpacity 
                   style={styles.cancelButton}
                   onPress={() => setModalVisible(false)}
+                  disabled={isSubmitting}
                 >
                   <Text style={styles.cancelButtonText}>İptal</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
-                  style={styles.saveButton}
+                  style={[styles.saveButton, isSubmitting && styles.disabledSaveButton]}
                   onPress={handleAddHouse}
+                  disabled={isSubmitting}
                 >
-                  <Text style={styles.saveButtonText}>Kaydet</Text>
+                  {isSubmitting ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text style={styles.saveButtonText}>Kaydet</Text>
+                  )}
                 </TouchableOpacity>
               </View>
             </View>
@@ -118,6 +155,7 @@ export default function AddHomeButton({ onAddHouse }: AddHomeButtonProps) {
     </>
   );
 }
+
 
 const styles = StyleSheet.create({
   addHouseButton: {
@@ -137,7 +175,22 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
     fontWeight: '500',
   },
-  
+  disabledButton: {
+    opacity: 0.5,
+  },
+  errorContainer: {
+    backgroundColor: '#FFEBEE',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: '#D32F2F',
+    fontSize: 14,
+  },
+  disabledSaveButton: {
+    opacity: 0.7,
+  },
   // Modal styles
   modalContainer: {
     flex: 1,
