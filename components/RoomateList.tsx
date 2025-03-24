@@ -2,15 +2,46 @@
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AddRoommateButton from './AddRoomateButton';
 
+// Define the interface for Roommate
+interface Roommate {
+  id: string;
+  name: string;
+  email: string;
+  photoUrl: string;
+}
 
+// Interface for a new roommate
+interface NewRoommate {
+  name: string;
+  email: string;
+}
 
 // Props for the RoommateList component
 interface RoommateListProps {
+  houseId: string;
   roommates: Roommate[];
+  onAddRoommate: (houseId: string, roommate: NewRoommate) => Promise<boolean>;
+  isLoading?: boolean;
 }
 
-export default function RoommateList({ roommates }: RoommateListProps) {
+export default function RoommateList({ 
+  houseId, 
+  roommates, 
+  onAddRoommate,
+  isLoading = false 
+}: RoommateListProps) {
+  
+  const handleAddRoommate = async (houseId: string, newRoommate: NewRoommate): Promise<boolean> => {
+    try {
+      return await onAddRoommate(houseId, newRoommate);
+    } catch (error) {
+      console.error('Error in handleAddRoommate:', error);
+      return false;
+    }
+  };
+
   return (
     <View style={styles.container}>
       {roommates.length > 0 ? (
@@ -34,10 +65,11 @@ export default function RoommateList({ roommates }: RoommateListProps) {
         <Text style={styles.emptyRoommates}>Bu evde henüz ev arkadaşı yok.</Text>
       )}
       
-      <TouchableOpacity style={styles.inviteButton}>
-        <Ionicons name="person-add-outline" size={16} color="#fff" style={styles.inviteIcon} />
-        <Text style={styles.inviteButtonText}>Ev Arkadaşı Ekle</Text>
-      </TouchableOpacity>
+      <AddRoommateButton 
+        houseId={houseId}
+        onAddRoommate={handleAddRoommate}
+        disabled={isLoading}
+      />
     </View>
   );
 }
@@ -81,22 +113,5 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: '#999',
     marginBottom: 16,
-  },
-  inviteButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#4CAF50',
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    marginTop: 12,
-  },
-  inviteIcon: {
-    marginRight: 8,
-  },
-  inviteButtonText: {
-    color: '#fff',
-    fontWeight: '500',
   },
 });

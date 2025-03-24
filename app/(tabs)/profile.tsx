@@ -13,6 +13,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import HouseList from '../../components/HouseList';
 
+
+
 // Define the interfaces for our data structure
 interface Roommate {
   id: string;
@@ -163,6 +165,10 @@ export default function ProfileScreen() {
           houses={user.houses} 
           onAddHouse={handleAddHouse}
           isLoading={isAddingHouse}
+          onAddRoommate={(houseId, roommate) => {
+            console.log(`Adding roommate ${roommate.name} to house ${houseId}`);
+            return Promise.resolve(true);
+          }}
         />
         
         {/* Rest of your component remains the same */}

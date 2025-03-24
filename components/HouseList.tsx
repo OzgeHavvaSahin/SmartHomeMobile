@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AddHomeButton from './AddHomeButton';
-import RoommateList from './RommateList';
+import RoommateList from './RoomateList';
 
 // Define interfaces
 interface Roommate {
@@ -11,6 +11,11 @@ interface Roommate {
   name: string;
   email: string;
   photoUrl: string;
+}
+
+interface NewRoommate {
+  name: string;
+  email: string;
 }
 
 interface House {
@@ -29,11 +34,17 @@ interface NewHouse {
 interface HouseListProps {
   houses: House[];
   onAddHouse: (house: NewHouse) => Promise<boolean>;
+  onAddRoommate: (houseId: string, roommate: NewRoommate) => Promise<boolean>;
   isLoading?: boolean;
 }
 
-export default function HouseList({ houses, onAddHouse, isLoading = false }: HouseListProps) {
-  // Pass the async function through
+export default function HouseList({ 
+  houses, 
+  onAddHouse, 
+  onAddRoommate,
+  isLoading = false 
+}: HouseListProps) {
+  
   const handleAddHouse = async (newHouse: NewHouse): Promise<boolean> => {
     try {
       return await onAddHouse(newHouse);
@@ -58,8 +69,13 @@ export default function HouseList({ houses, onAddHouse, isLoading = false }: Hou
           
           <Text style={styles.houseAddress}>{house.address}</Text>
           
-          {/* Roommate Component */}
-          <RoommateList roommates={house.roommates || []} />
+          {/* Roommate Component with add functionality */}
+          <RoommateList 
+            houseId={house.id}
+            roommates={house.roommates || []} 
+            onAddRoommate={onAddRoommate}
+            isLoading={isLoading}
+          />
         </View>
       ))}
       
@@ -71,6 +87,8 @@ export default function HouseList({ houses, onAddHouse, isLoading = false }: Hou
     </View>
   );
 }
+
+// Same styles as before
 
 const styles = StyleSheet.create({
   container: {
