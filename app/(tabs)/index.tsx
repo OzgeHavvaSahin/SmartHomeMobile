@@ -16,17 +16,6 @@ interface Device {
   roomId: string;
 }
 
-interface Room {
-  id: string;
-  name: string;
-  houseId: string;
-}
-
-interface House {
-  id: string;
-  name: string;
-  address: string;
-}
 
 export default function HomeScreen() {
   // State for houses, rooms, devices, and selected house

@@ -1,4 +1,4 @@
-// src/screens/LightControlScreen.tsx
+// app/(devices)/light.tsx
 import React, { useState, useEffect } from 'react';
 import { 
   View, 
@@ -10,38 +10,32 @@ import {
   Image 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-// For type checking with React Navigation
-type LightControlProps = {
-  route?: {
-    params: {
-      deviceId: string;
-      deviceName: string;
-      isOn: boolean;
-      color?: string; // Optional initial color
-    }
-  };
-  navigation?: any;
-};
+import { useLocalSearchParams, router } from 'expo-router';
 
 // Available colors for the light
 type LightColor = 'red' | 'green' | 'blue' | 'yellow';
 
-const LightControlScreen: React.FC<LightControlProps> = ({ route, navigation }) => {
-  // If we don't receive route params, use these defaults
+export default function LightControlScreen() {
+  // Get params from Expo Router
+  const params = useLocalSearchParams();
+  
+  // Define defaults in case params are missing
   const defaultParams = {
-    deviceId: '1',
-    deviceName: 'Salon Lambası',
-    isOn: false,
+    id: '1',
+    name: 'Salon Lambası',
+    isOn: 'false',
     color: 'yellow'
   };
   
-  // Use params from navigation or defaults
-  const params = route?.params || defaultParams;
+  // Use params or defaults
+  const deviceId = params.id as string || defaultParams.id;
+  const deviceName = params.name as string || defaultParams.name;
+  const initialIsOn = params.isOn === 'true';
+  const initialColor = (params.color as string) || defaultParams.color;
   
   // State to track light status
-  const [isOn, setIsOn] = useState(params.isOn);
-  const [color, setColor] = useState<LightColor>((params.color as LightColor) || 'yellow');
+  const [isOn, setIsOn] = useState(initialIsOn);
+  const [color, setColor] = useState<LightColor>((initialColor as LightColor) || 'yellow');
   const [lastToggled, setLastToggled] = useState<Date | null>(null);
 
   // Toggle light on/off
@@ -85,11 +79,7 @@ const LightControlScreen: React.FC<LightControlProps> = ({ route, navigation }) 
 
   // Go back to previous screen
   const handleGoBack = () => {
-    if (navigation) {
-      navigation.goBack();
-    } else {
-      console.log('Go back pressed');
-    }
+    router.back();
   };
 
   return (
@@ -106,7 +96,7 @@ const LightControlScreen: React.FC<LightControlProps> = ({ route, navigation }) 
       </View>
       
       {/* Device name */}
-      <Text style={styles.deviceName}>{params.deviceName}</Text>
+      <Text style={styles.deviceName}>{deviceName}</Text>
       
       {/* Light status visualization */}
       <View style={styles.statusContainer}>
@@ -197,7 +187,7 @@ const LightControlScreen: React.FC<LightControlProps> = ({ route, navigation }) 
         
         <View style={styles.detailRow}>
           <Text style={styles.detailLabel}>Cihaz ID:</Text>
-          <Text style={styles.detailValue}>{params.deviceId}</Text>
+          <Text style={styles.detailValue}>{deviceId}</Text>
         </View>
         
         <View style={styles.detailRow}>
@@ -232,7 +222,7 @@ const LightControlScreen: React.FC<LightControlProps> = ({ route, navigation }) 
       </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -407,5 +397,3 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
 });
-
-export default LightControlScreen;
