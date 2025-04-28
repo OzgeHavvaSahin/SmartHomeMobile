@@ -115,7 +115,7 @@ export default function HomeScreen() {
       switch (device.type) {
         case 'light':
           router.push({
-            pathname: '/devices/LightControlScreen',
+            pathname: '/deviceScreens/LightControlScreen',
             params: { 
               id: device.id,
               name: device.name,
@@ -127,7 +127,7 @@ export default function HomeScreen() {
           
         case 'doorSensor':
           router.push({
-            pathname: '/devices/DoorControlScreen',
+            pathname: '/deviceScreens/DoorControlScreen',
             params: { 
               id: device.id,
               name: device.name,
@@ -138,7 +138,7 @@ export default function HomeScreen() {
           
         case 'windowSensor':
           router.push({
-            pathname: '/devices/WindowControlScreen',
+            pathname: '/deviceScreens/WindowControlScreen',
             params: { 
               id: device.id,
               name: device.name,
