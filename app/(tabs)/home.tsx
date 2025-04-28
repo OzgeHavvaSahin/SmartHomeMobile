@@ -1,4 +1,4 @@
-// app/(tabs)/index.tsx
+// app/(tabs)/home.tsx
 import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, SafeAreaView, TouchableOpacity, Modal, FlatList } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
