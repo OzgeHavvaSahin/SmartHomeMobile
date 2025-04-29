@@ -103,7 +103,7 @@ export default function SignUpScreen() {
           {/* Logo and welcome text */}
           <View style={styles.logoContainer}>
             <Image
-              source={require('../assets/images/ai.png')}
+              source={require('@/src/assets/images/ai.png')}
               style={styles.logo}
             />
             <Text style={styles.welcomeText}>Akıllı Ev Deneyimine Katılın</Text>
