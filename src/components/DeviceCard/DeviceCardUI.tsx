@@ -3,7 +3,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from './DeviceCard.styles';
-import { DeviceCardUIProps } from '@/types/device.types';
+import { DeviceCardUIProps } from '@/src/types/device.types';
 
 // This is the "dumb" presentational component that only handles rendering
 const DeviceCardUI: React.FC<DeviceCardUIProps> = ({

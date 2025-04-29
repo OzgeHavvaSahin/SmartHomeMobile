@@ -1,32 +1,33 @@
-import { useEffect } from 'react';
-import { router } from 'expo-router';
-import { View, ActivityIndicator } from 'react-native';
-
-// Mock authentication check - replace with your actual auth logic
-const checkAuth = async (): Promise<boolean> => {
-  // Simulate API call to check if user is logged in
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  return false; // Demo: not authenticated
-};
+import React, { useEffect } from 'react';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { Redirect } from 'expo-router';
+import { useAuth } from '../src/context/AuthContext';
 
 export default function Index() {
-  useEffect(() => {
-    const redirect = async () => {
-      const isAuthenticated = await checkAuth();
-      if (isAuthenticated) {
-        router.replace('/(tabs)/home');
-      } else {
-        router.replace('/sign-in');
-      }
-    };
-    
-    redirect();
-  }, []);
+  const { authState } = useAuth();
+  const { isAuthenticated, loading } = authState;
 
-  // Loading screen while checking auth
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" color="#4CAF50" />
-    </View>
-  );
+  // While authentication is still being checked, show loading indicator
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#4CAF50" />
+      </View>
+    );
+  }
+
+  // After auth state is resolved, redirect accordingly
+  // Using Redirect component instead of router.replace
+  return isAuthenticated ? 
+    <Redirect href="/(tabs)/home" /> : 
+    <Redirect href="/(auth)/sign-in" />;
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff'
+  }
+});
