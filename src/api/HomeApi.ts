@@ -1,0 +1,116 @@
+import { createAuthRequest } from './ApiService';
+import
+ { GetAllHomesResponse,
+   CreateHomeRequest,   
+   CreateHomeResponse
+ } from '../interfaces/homeInterfaces'; // You'll need to create this interface
+
+/**
+ * Get all homes for the authenticated user
+ * @returns {Promise<GetAllHomesResponse[]>} - Array of homes
+ */
+export const getAllHomes = async (): Promise<GetAllHomesResponse[]> => {
+  try {
+    const response = await createAuthRequest('/Homes/GetAllHomes', 'GET');
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Evleri getirme başarısız oldu');
+    }
+    
+    return data;
+  } catch (error: any) {
+    console.error('Get homes error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get a specific home by ID
+ * @param {number} homeId - The ID of the home to retrieve
+ * @returns {Promise<GetAllHomesResponse>} - Home details
+ */
+export const getHomeById = async (homeId: number): Promise<GetAllHomesResponse> => {
+  try {
+    const response = await createAuthRequest(`/Homes/GetHomeBy/${homeId}`, 'GET');
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Ev detaylarını getirme başarısız oldu');
+    }
+    
+    return data;
+  } catch (error: any) {
+    console.error('Get home details error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Create a new home
+ * @param {CreateHomeRequest} homeData - The home data to create
+ * @returns {Promise<CreateHomeResponse>} - The created home
+ */
+export const createHome = async (homeData: CreateHomeRequest ): Promise<CreateHomeResponse> => {
+  try {
+    const response = await createAuthRequest('/Homes/CreateHome', 'POST', homeData);
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Ev oluşturma başarısız oldu');
+    }
+    
+    return data;
+  } catch (error: any) {
+    console.error('Create home error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Update an existing home
+ * @param {number} homeId - The ID of the home to update
+ * @param {object} homeData - The updated home data
+ * @returns {Promise<Home>} - The updated home
+ */
+// export const updateHome = async (
+//   homeId: number, 
+//   homeData: { name: string }
+// ): Promise<Home> => {
+//   try {
+//     const response = await createAuthRequest(`/Homes/${homeId}`, 'PUT', homeData);
+    
+//     const data = await response.json();
+    
+//     if (!response.ok) {
+//       throw new Error(data.message || 'Ev güncelleme başarısız oldu');
+//     }
+    
+//     return data;
+//   } catch (error: any) {
+//     console.error('Update home error:', error);
+//     throw error;
+//   }
+// };
+
+/**
+ * Delete a home
+ * @param {number} homeId - The ID of the home to delete
+ * @returns {Promise<void>}
+ */
+export const deleteHome = async (homeId: number): Promise<void> => {
+  try {
+    const response = await createAuthRequest(`/Homes/DeleteHomeBy/${homeId}`, 'DELETE');
+    
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.message || 'Ev silme başarısız oldu');
+    }
+  } catch (error: any) {
+    console.error('Delete home error:', error);
+    throw error;
+  }
+};

@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LoginRequest, LoginResponse } from '../interfaces/auth';
 
 export const API_URL = 'https://seniorprojectv1-f3asa2hzanczg3cx.eastus-01.azurewebsites.net/api';
 
@@ -32,7 +31,6 @@ export class TokenManager {
   }
 }
 
-// Helper function to create request with token
 export const createAuthRequest = async (
     endpoint: string, 
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
