@@ -7,6 +7,7 @@ import {
     LoginCredentials,
     User 
   } from '../interfaces/auth'
+import { TokenManager } from '../api/ApiService';
 
 // Initial state
 const initialState: AuthState = {
@@ -78,29 +79,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [authState, dispatch] = useReducer(authReducer, initialState);
 
   // Login function
-  const login = async (credentials: LoginCredentials) => {
-    try {
-      dispatch({ type: 'LOGIN_REQUEST' });
-      const data = await loginUser(credentials);
-      
-      // Store token in AsyncStorage
-      await AsyncStorage.setItem('token', data.token);
-      
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: {
-          user: { id: data.id, email: credentials.email },
-          token: data.token,
-        },
-      });
-    } catch (error: any) {
-      dispatch({
-        type: 'LOGIN_FAILURE',
-        payload: error.message || 'Giriş başarısız oldu',
-      });
-      throw error;
+const login = async (credentials: LoginCredentials) => {
+  try {
+    dispatch({ type: 'LOGIN_REQUEST' });
+    const data = await loginUser(credentials);
+    
+    if (!data.token) {
+      throw new Error('No token received from server');
     }
-  };
+    
+    console.log('Received token during login');
+    
+    // Store token in AsyncStorage
+    await AsyncStorage.setItem('token', data.token);
+    
+    // Also make sure TokenManager has the token
+    await TokenManager.setToken(data.token);
+    
+    console.log('Token stored successfully');
+    
+    dispatch({
+      type: 'LOGIN_SUCCESS',
+      payload: {
+        user: { id: data.id, email: credentials.email },
+        token: data.token,
+      },
+    });
+  } catch (error: any) {
+    console.error('Login error:', error);
+    dispatch({
+      type: 'LOGIN_FAILURE',
+      payload: error.message || 'Giriş başarısız oldu',
+    });
+    throw error;
+  }
+};
 
   // Logout function
   const logout = async () => {
@@ -115,24 +128,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Load token from storage on app start
-  const loadToken = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      if (token) {
-        // In a real app, you might want to validate the token
-        // For now, just set the authenticated state
-        dispatch({
-          type: 'LOGIN_SUCCESS',
-          payload: {
-            user: null, // You might want to fetch user info based on token
-            token,
-          },
-        });
-      }
-    } catch (error) {
-      console.error('Error loading token:', error);
+// Load token from storage on app start - update in AuthContext.tsx
+const loadToken = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    if (token) {
+      console.log('Found token in AsyncStorage during app startup');
+      
+      // Make sure TokenManager also has the token
+      await TokenManager.setToken(token);
+      
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: {
+          user: null,
+          token,
+        },
+      });
     }
-  };
+  } catch (error) {
+    console.error('Error loading token:', error);
+  }
+};
 
   // Load token on context initialization
   React.useEffect(() => {

@@ -16,7 +16,7 @@ export const loginUser = async (credentials: LoginRequest): Promise<LoginRespons
     if (!response.ok) {
       throw new Error(data.message || 'Giriş başarısız oldu');
     }
-    
+     console.log(data.token)
     // Store the token using TokenManager
     if (data.token) {
       await TokenManager.setToken(data.token);

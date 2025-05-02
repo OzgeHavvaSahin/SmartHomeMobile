@@ -13,3 +13,9 @@ export interface CreateHomeResponse {
   homeId: number;
   name: string;
 }
+
+export interface Home {
+  id: number;
+  name: string;
+  ownerId: number;
+}

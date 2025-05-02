@@ -52,7 +52,6 @@ export default function SignInScreen() {
     try {
       // Call login from auth context
       await login({ email, password });
-      
       // Navigation will happen automatically due to the useEffect above
     } catch (error: any) {
       // The error is already set in the context, no need to set it here

@@ -11,21 +11,39 @@ import
  */
 export const getAllHomes = async (): Promise<GetAllHomesResponse[]> => {
   try {
+    // Use the createAuthRequest helper that automatically includes the token
     const response = await createAuthRequest('/Homes/GetAllHomes', 'GET');
     
-    const data = await response.json();
+    console.log('Response status:', response.status);
     
+    // First check the status code
     if (!response.ok) {
-      throw new Error(data.message || 'Evleri getirme başarısız oldu');
+      const errorText = await response.text();
+      console.error('API error response:', errorText);
+      throw new Error(`API error: ${response.status} ${response.statusText}. ${errorText}`);
     }
     
-    return data;
+    // Get the raw response text
+    const responseText = await response.text();
+    console.log('Raw response text:', responseText);
+    
+    // If the response is empty, return an empty array
+    if (!responseText || responseText.trim() === '') {
+      return [];
+    }
+    
+    // Try to parse the response as JSON
+    try {
+      return JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse response:', responseText);
+      throw new Error('API returned invalid JSON format');
+    }
   } catch (error: any) {
     console.error('Get homes error:', error);
     throw error;
   }
 };
-
 /**
  * Get a specific home by ID
  * @param {number} homeId - The ID of the home to retrieve
