@@ -21,7 +21,6 @@ const HomeSelector: React.FC<HomeSelectorProps> = ({
 }) => {
   const [modalVisible, setModalVisible] = useState(false);
   
-  // Find the selected home name
   const selectedHome = homes.find(home => home.id === selectedHomeId);
   const selectedHomeName = selectedHome ? (selectedHome.name || 'İsimsiz Ev') : 'Ev Seçin';
   console.log(error)
@@ -54,7 +53,6 @@ const HomeSelector: React.FC<HomeSelectorProps> = ({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Evinizi Seçin</Text>
       
       {/* Dropdown button */}
       <TouchableOpacity 
