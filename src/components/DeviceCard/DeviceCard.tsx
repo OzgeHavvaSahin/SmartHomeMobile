@@ -1,8 +1,8 @@
 // components/DeviceCard/DeviceCard.tsx
 import React from 'react';
 import DeviceCardUI from './DeviceCardUI';
-import { DeviceCardProps } from '@/src/types/device.types';
 import { getDeviceIcon , getStatusText} from '@/src/utils/deviceHelper';
+import { DeviceCardProps } from '@/src/interfaces/components';
 
 // This is the "smart" container component that handles business logic
 const DeviceCard: React.FC<DeviceCardProps> = ({

@@ -1,5 +1,4 @@
-// utils/deviceHelpers.ts
-import { DeviceType } from '../types/device.types';
+import { DeviceType } from "../interfaces/components";
 
 // Get appropriate icon based on device type
 export const getDeviceIcon = (type: DeviceType, isActive: boolean) => {

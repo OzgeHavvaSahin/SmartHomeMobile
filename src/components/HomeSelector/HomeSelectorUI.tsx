@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
 import { styles } from './HomeSelector.styles';
-import { Home } from '../../interfaces/homeInterfaces';
+import { Home } from '../../interfaces/components';
 
 interface HomeSelectorProps {
   homes: Home[];

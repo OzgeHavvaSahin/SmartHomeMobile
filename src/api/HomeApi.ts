@@ -3,7 +3,7 @@ import
  { GetAllHomesResponse,
    CreateHomeRequest,   
    CreateHomeResponse
- } from '../interfaces/homeInterfaces'; // You'll need to create this interface
+ } from '../interfaces/components'; // You'll need to create this interface
 
 /**
  * Get all homes for the authenticated user
@@ -11,28 +11,23 @@ import
  */
 export const getAllHomes = async (): Promise<GetAllHomesResponse[]> => {
   try {
-    // Use the createAuthRequest helper that automatically includes the token
     const response = await createAuthRequest('/Homes/GetAllHomes', 'GET');
     
     console.log('Response status:', response.status);
     
-    // First check the status code
     if (!response.ok) {
       const errorText = await response.text();
       console.error('API error response:', errorText);
       throw new Error(`API error: ${response.status} ${response.statusText}. ${errorText}`);
     }
     
-    // Get the raw response text
     const responseText = await response.text();
     console.log('Raw response text:', responseText);
     
-    // If the response is empty, return an empty array
     if (!responseText || responseText.trim() === '') {
       return [];
     }
     
-    // Try to parse the response as JSON
     try {
       return JSON.parse(responseText);
     } catch (parseError) {
