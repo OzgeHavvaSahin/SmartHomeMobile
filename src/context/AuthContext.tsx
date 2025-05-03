@@ -117,16 +117,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
-  // Load token + user on startup
+
   const loadToken = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
       const userJson = await AsyncStorage.getItem('user');
-
+  
       if (token && userJson) {
         await TokenManager.setToken(token);
         const user = JSON.parse(userJson);
-
+  
         dispatch({
           type: 'LOGIN_SUCCESS',
           payload: {
@@ -134,20 +134,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             token,
           },
         });
+      } else {
+        dispatch({ type: 'LOGOUT' });
       }
     } catch (error) {
       console.error('Error loading token or user:', error);
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('user');
       dispatch({ type: 'LOGOUT' });
     } finally {
       setInitialized(true);
     }
   };
-
-  React.useEffect(() => {
-    loadToken();
-  }, []);
 
   return (
     <AuthContext.Provider
