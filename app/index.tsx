@@ -35,7 +35,7 @@ export default function SignInScreen() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.replace('/(app)/(tabs)');
+      router.navigate("/(tabs)");
     }
   }, [isAuthenticated]);
 

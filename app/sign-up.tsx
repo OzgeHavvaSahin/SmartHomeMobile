@@ -66,7 +66,7 @@ export default function SignUpScreen() {
       await new Promise(resolve => setTimeout(resolve, 1500));
 
       // For demo, just navigate to the main app
-      router.replace('/(tabs)/home');
+      // router.replace('/(tabs)/home');
       
       // In a real app, you would:
       // 1. Send registration data to your backend
