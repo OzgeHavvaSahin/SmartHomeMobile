@@ -4,9 +4,9 @@ import { styles } from "./RoomList.styles";
 import { DeviceType } from "@/src/interfaces/components";
 import DeviceCard from "../DeviceCard/DeviceCard";
 
-// Define the Device interface
+// Types
 export interface Device {
-  id: string;
+  id: number;
   name: string;
   type: DeviceType;
   description: string;
@@ -14,49 +14,60 @@ export interface Device {
   roomId: string;
 }
 
-interface RoomListUIProps {
+export interface Room {
+  id: number;
   name: string;
   devices: Device[];
-  onAddDevice: () => void;
+}
+
+interface RoomListUIProps {
+  rooms: Room[];
+  onAddDevice: (roomId: number) => void;
   onNavigateToDeviceDetails: (deviceId: number) => void;
 }
 
-const RoomListUI: React.FC<RoomListUIProps> = ({ 
-  name, 
-  devices, 
-  onAddDevice, 
-  onNavigateToDeviceDetails
+const RoomListUI: React.FC<RoomListUIProps> = ({
+  rooms,
+  onAddDevice,
+  onNavigateToDeviceDetails,
 }) => {
   return (
     <View style={styles.container}>
-      {/* Room Title */}
-      <Text style={styles.title}>{name}</Text>
+      <FlatList
+  data={rooms}
+  keyExtractor={(room) => room.id.toString()}
+  renderItem={({ item: room }) => (
+    <View style={styles.roomCard}>
+      <Text style={styles.title}>{room.name}</Text>
 
-      {/* Devices List */}
-      {devices.length === 0 ? (
+      {room.devices.length === 0 ? (
         <Text style={styles.emptyMessage}>Bu odada henüz cihaz yok.</Text>
       ) : (
-        <View style={styles.devicesList}>
-          <FlatList
-            data={devices}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <DeviceCard
-                id={item.id}
-                name={item.name}
-                type={item.type}
-                description={item.description}
-                isActive={item.isActive}
-                onNavigateToDetails={onNavigateToDeviceDetails}
-              />
-            )}
-            scrollEnabled={false} // Prevents nested scrolling issues
-          />
-        </View>
+        <FlatList
+          data={room.devices}
+          keyExtractor={(device) => device.id.toString()}
+          renderItem={({ item: device }) => (
+            <DeviceCard
+              id={device.id}
+              name={device.name}
+              type={device.type}
+              description={device.description}
+              isActive={device.isActive}
+              onNavigateToDetails={onNavigateToDeviceDetails}
+            />
+          )}
+          scrollEnabled={false}
+        />
       )}
 
-      {/* Add Device Button */}
-      <Button title="Cihaz Ekle" onPress={onAddDevice} />
+      <Button
+        title="Cihaz Ekle"
+        onPress={() => onAddDevice(room.id)}
+      />
+    </View>
+  )}
+/>
+
     </View>
   );
 };

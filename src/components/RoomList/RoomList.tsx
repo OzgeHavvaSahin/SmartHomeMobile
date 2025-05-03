@@ -1,69 +1,74 @@
 import React, { useEffect, useState } from "react";
 import RoomListUI from "./RoomListUI";
-import { fetchRoomDevices } from "../../api/RoomApi";
-import { Device } from "./RoomListUI";
+import { getAllRoomsbyHomeID  } from "@/src/api/RoomApi";
+import { fetchRoomDevices } from "@/src/api/RoomApi";
+import { DeviceType } from "@/src/interfaces/components";
 
-interface RoomProps {
-  roomId: number;
+export interface Device {
+  id: number;
   name: string;
-  onAddDevice: () => void;
-  onNavigateToDeviceDetails: (deviceId: number) => void; // Changed from string to number to match Device interface
+  type: DeviceType;
+  description: string;
+  isActive: boolean;
+  roomId: string;
 }
 
-const Room: React.FC<RoomProps> = ({ 
-  roomId, 
-  name, 
-  onAddDevice, 
-  onNavigateToDeviceDetails
-}) => {
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+export interface Room {
+  id: number;
+  name: string;
+  devices: Device[];
+}
+
+interface RoomListProps {
+  ownerId: number;
+  onAddDevice: (roomId: number) => void;
+  onNavigateToDeviceDetails: (deviceId: number) => void;
+}
+
+const RoomList: React.FC<RoomListProps> = ({ ownerId, onAddDevice, onNavigateToDeviceDetails }) => {
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadDevices = async () => {
+    const loadRoomsAndDevices = async () => {
       try {
-        setIsLoading(true);
+        setLoading(true);
         setError(null);
-        
-        const roomDevices = await fetchRoomDevices(roomId);
-        
-        setDevices(roomDevices);
+
+        const roomList = await getAllRoomsbyHomeID(ownerId);
+
+        const roomsWithDevices: Room[] = await Promise.all(
+          roomList.map(async (room: { id: number; name: string }) => {
+            const devices = await fetchRoomDevices(Number(room.id));
+            return {
+              ...room,
+              devices,
+            };
+          })
+        );
+
+        setRooms(roomsWithDevices);
       } catch (err) {
-        setError("Cihazlar yüklenirken bir hata oluştu. Lütfen tekrar deneyin.");
-        console.error("Error fetching devices:", err);
+        console.error(err);
+        setError("Odalar yüklenirken bir hata oluştu.");
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    loadDevices();
-  }, [roomId]);
+    loadRoomsAndDevices();
+  }, [ownerId]);
 
-  // Adapter function to convert ID types if needed
-  const handleNavigateToDeviceDetails = (deviceId: number) => {
-    onNavigateToDeviceDetails(deviceId);
-  };
 
-  // Handle loading state
-  if (isLoading) {
-    return <RoomListUI name={name} devices={[]} onAddDevice={onAddDevice} onNavigateToDeviceDetails={handleNavigateToDeviceDetails} />;
-  }
-
-  // Handle error state
-  if (error) {
-    // You might want to add error handling UI here
-    console.log(error);
-  }
 
   return (
     <RoomListUI
-      name={name}
-      devices={devices}
+      rooms={rooms}
       onAddDevice={onAddDevice}
-      onNavigateToDeviceDetails={handleNavigateToDeviceDetails}
+      onNavigateToDeviceDetails={onNavigateToDeviceDetails}
     />
   );
 };
 
-export default Room;
+export default RoomList;

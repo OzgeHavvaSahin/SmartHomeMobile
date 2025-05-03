@@ -47,7 +47,7 @@ export const getAllRooms = async (): Promise<Room[]> => {
  */
 export const getAllRoomsbyHomeID = async (homeId: number): Promise<Room[]> => {
   try {
-    const response = await createAuthRequest(`/Homes/GetRoomsBy/${homeId}`, 'GET');
+    const response = await createAuthRequest(`/Rooms/GetRoomsByHome/${homeId}`, 'GET');
     
     console.log('Response status:', response.status);
     
@@ -72,27 +72,6 @@ export const getAllRoomsbyHomeID = async (homeId: number): Promise<Room[]> => {
     }
   } catch (error: any) {
     console.error('Get rooms error:', error);
-    throw error;
-  }
-};
-
-/**
- * Get a specific room by ID
- * @param {number} roomId - The ID of the room to retrieve
- * @returns {Promise<Room>} - Room details
- */
-export const getRoomById = async (roomId: number): Promise<Room> => {
-  try {
-    const response = await createAuthRequest(`/Rooms/GetRoomBy/${roomId}`, 'GET');
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      throw new Error(errorData?.message || 'Oda detaylarını getirme başarısız oldu');
-    }
-    
-    return await response.json();
-  } catch (error: any) {
-    console.error('Get room details error:', error);
     throw error;
   }
 };

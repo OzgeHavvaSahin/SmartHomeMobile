@@ -45,7 +45,7 @@ export interface Home {
 export type DeviceType = 'Lamp' | 'Door' | 'Camera';
 
 export interface DeviceCardProps {
-  id: string;
+  id: number;
   name: string;
   type: DeviceType;
   description: string;
@@ -54,7 +54,7 @@ export interface DeviceCardProps {
 }
 
 export interface DeviceCardUIProps {
-  id: string;
+  id: number;
   name: string;
   type: DeviceType;
   description: string;

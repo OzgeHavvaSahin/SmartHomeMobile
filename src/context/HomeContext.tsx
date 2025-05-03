@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getHomesbyOwnerId } from '../api/HomeApi';
 import { GetAllHomesResponse, Home } from '../interfaces/components';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STORAGE_KEYS = {
+  selectedHomeId: 'selectedHomeId',
+  homeIds: 'homeIds',
+};
 
 interface HomeContextType {
   homes: Home[];
@@ -30,12 +36,16 @@ export const HomeProvider: React.FC<HomeProviderProps> = ({ children, ownerId  }
       setLoading(true);
       const homesData = await getHomesbyOwnerId(ownerId);
       setHomes(homesData);
-      
-      // If no home is selected yet and we got homes, select the first one
-      if (selectedHomeId === null && homesData.length > 0) {
-        setSelectedHomeId(homesData[0].id);
+  
+      const homeIds = homesData.map(home => home.id);
+      await AsyncStorage.setItem(STORAGE_KEYS.homeIds, JSON.stringify(homeIds));
+  
+      // Eğer seçili ev yoksa, ilk evi seç
+      if (selectedHomeId === null && homeIds.length > 0) {
+        setSelectedHomeId(homeIds[0]);
+        await AsyncStorage.setItem(STORAGE_KEYS.selectedHomeId, homeIds[0].toString());
       }
-      
+  
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Evler yüklenirken bir hata oluştu');
@@ -43,11 +53,25 @@ export const HomeProvider: React.FC<HomeProviderProps> = ({ children, ownerId  }
       setLoading(false);
     }
   };
+  
 
-  // Load homes when component mounts
   useEffect(() => {
+    const loadSelectedHomeId = async () => {
+      const storedId = await AsyncStorage.getItem(STORAGE_KEYS.selectedHomeId);
+      if (storedId) {
+        setSelectedHomeId(Number(storedId));
+      }
+    };
+  
+    loadSelectedHomeId();
     refreshHomes();
   }, []);
+ 
+  const handleSetSelectedHomeId = (id: number) => {
+    setSelectedHomeId(id);
+    AsyncStorage.setItem(STORAGE_KEYS.selectedHomeId, id.toString());
+  };
+  
 
   return (
     <HomeContext.Provider
@@ -56,7 +80,7 @@ export const HomeProvider: React.FC<HomeProviderProps> = ({ children, ownerId  }
         loading,
         error,
         selectedHomeId,
-        setSelectedHomeId,
+        setSelectedHomeId: handleSetSelectedHomeId,
         refreshHomes,
       }}
     >
