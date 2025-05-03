@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginUser } from '../api/AuthApi';
 import { 
@@ -127,29 +127,31 @@ const login = async (credentials: LoginCredentials) => {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
-  // Load token from storage on app start
-// Load token from storage on app start - update in AuthContext.tsx
-const loadToken = async () => {
-  try {
-    const token = await AsyncStorage.getItem('token');
-    if (token) {
-      console.log('Found token in AsyncStorage during app startup');
-      
-      // Make sure TokenManager also has the token
-      await TokenManager.setToken(token);
-      
-      dispatch({
-        type: 'LOGIN_SUCCESS',
-        payload: {
-          user: null,
-          token,
-        },
-      });
+  const [initialized, setInitialized] = useState(false);
+
+  const loadToken = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        console.log('Found token in AsyncStorage during app startup');
+        
+        // Make sure TokenManager also has the token
+        await TokenManager.setToken(token);
+        
+        dispatch({
+          type: 'LOGIN_SUCCESS',
+          payload: {
+            user: null,
+            token,
+          },
+        });
+      }
+    } catch (error) {
+      console.error('Error loading token:', error);
+    } finally {
+      setInitialized(true);
     }
-  } catch (error) {
-    console.error('Error loading token:', error);
-  }
-};
+  };
 
   // Load token on context initialization
   React.useEffect(() => {
@@ -163,6 +165,7 @@ const loadToken = async () => {
         login,
         logout,
         clearError,
+        initialized,
       }}
     >
       {children}

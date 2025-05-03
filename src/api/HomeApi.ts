@@ -40,13 +40,13 @@ export const getAllHomes = async (): Promise<GetAllHomesResponse[]> => {
   }
 };
 /**
- * Get a specific home by ID
- * @param {number} homeId - The ID of the home to retrieve
- * @returns {Promise<GetAllHomesResponse>} - Home details
+* Get a specific home by HomeID
+ * @param {number} ownerId - The ID of the home to retrieve
+  * @returns {Promise<GetAllHomesResponse>} - Home details
  */
-export const getHomeById = async (homeId: number): Promise<GetAllHomesResponse> => {
+export const getHomeByHomeId = async (ownerId: number): Promise<GetAllHomesResponse> => {
   try {
-    const response = await createAuthRequest(`/Homes/GetHomeBy/${homeId}`, 'GET');
+    const response = await createAuthRequest(`/Homes/GetHomeBy/${ownerId}`, 'GET');
     
     const data = await response.json();
     
@@ -60,6 +60,29 @@ export const getHomeById = async (homeId: number): Promise<GetAllHomesResponse> 
     throw error;
   }
 };
+
+/**
+* Get a specific home by ID
+ * @param {number} ownerId - The ID of the home to retrieve
+  * @returns {Promise<GetAllHomesResponse>} - Home details
+ */
+export const getHomesbyOwnerId = async (ownerId: number): Promise<GetAllHomesResponse[]> => {
+  try {
+    const response = await createAuthRequest(`/Homes/GetAllHomesByUser/${ownerId}`, 'GET');
+    
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.message || 'Ev detaylarını getirme başarısız oldu');
+    }
+    
+    return data;
+  } catch (error: any) {
+    console.error('Get home details error:', error);
+    throw error;
+  }
+};
+
 
 /**
  * Create a new home
@@ -85,16 +108,16 @@ export const createHome = async (homeData: CreateHomeRequest ): Promise<CreateHo
 
 /**
  * Update an existing home
- * @param {number} homeId - The ID of the home to update
+ * @param {number} ownerId - The ID of the home to update
  * @param {object} homeData - The updated home data
  * @returns {Promise<Home>} - The updated home
  */
 // export const updateHome = async (
-//   homeId: number, 
+//   ownerId: number, 
 //   homeData: { name: string }
 // ): Promise<Home> => {
 //   try {
-//     const response = await createAuthRequest(`/Homes/${homeId}`, 'PUT', homeData);
+//     const response = await createAuthRequest(`/Homes/${ownerId}`, 'PUT', homeData);
     
 //     const data = await response.json();
     
@@ -111,12 +134,12 @@ export const createHome = async (homeData: CreateHomeRequest ): Promise<CreateHo
 
 /**
  * Delete a home
- * @param {number} homeId - The ID of the home to delete
+ * @param {number} ownerId - The ID of the home to delete
  * @returns {Promise<void>}
  */
-export const deleteHome = async (homeId: number): Promise<void> => {
+export const deleteHome = async (ownerId: number): Promise<void> => {
   try {
-    const response = await createAuthRequest(`/Homes/DeleteHomeBy/${homeId}`, 'DELETE');
+    const response = await createAuthRequest(`/Homes/DeleteHomeBy/${ownerId}`, 'DELETE');
     
     if (!response.ok) {
       const data = await response.json();

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getAllHomes } from '../api/HomeApi';
-import { Home } from '../interfaces/homeInterfaces';
+import { getHomesbyOwnerId } from '../api/HomeApi';
+import { GetAllHomesResponse, Home } from '../interfaces/components';
 
 interface HomeContextType {
   homes: Home[];
@@ -15,10 +15,12 @@ const HomeContext = createContext<HomeContextType | undefined>(undefined);
 
 interface HomeProviderProps {
   children: ReactNode;
+  ownerId : number;
+
 }
 
-export const HomeProvider: React.FC<HomeProviderProps> = ({ children }) => {
-  const [homes, setHomes] = useState<Home[]>([]);
+export const HomeProvider: React.FC<HomeProviderProps> = ({ children, ownerId  }) => {
+  const [homes, setHomes] = useState<GetAllHomesResponse[]>([]);
   const [selectedHomeId, setSelectedHomeId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +28,7 @@ export const HomeProvider: React.FC<HomeProviderProps> = ({ children }) => {
   const refreshHomes = async () => {
     try {
       setLoading(true);
-      const homesData = await getAllHomes();
+      const homesData = await getHomesbyOwnerId(ownerId);
       setHomes(homesData);
       
       // If no home is selected yet and we got homes, select the first one
