@@ -42,7 +42,7 @@ export interface Home {
   ownerId: number;
 }
 
-export type DeviceType = 'light' | 'doorSensor' | 'windowSensor' | 'camera';
+export type DeviceType = 'Lamp' | 'Door' | 'Camera';
 
 export interface DeviceCardProps {
   id: string;

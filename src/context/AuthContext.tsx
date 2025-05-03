@@ -2,11 +2,11 @@ import React, { createContext, useContext, useReducer, ReactNode, useState } fro
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { loginUser } from '../api/AuthApi';
 import { 
-    AuthState, 
-    AuthContextType, 
-    LoginCredentials,
-    User 
-  } from '../interfaces/auth'
+  AuthState, 
+  AuthContextType, 
+  LoginCredentials,
+  LoginResponse,
+} from '../interfaces/auth';
 import { TokenManager } from '../api/ApiService';
 
 // Initial state
@@ -21,7 +21,7 @@ const initialState: AuthState = {
 // Action types
 type AuthAction =
   | { type: 'LOGIN_REQUEST' }
-  | { type: 'LOGIN_SUCCESS'; payload: { user: User | null; token: string } }
+  | { type: 'LOGIN_SUCCESS'; payload: { user: LoginResponse | null; token: string } }
   | { type: 'LOGIN_FAILURE'; payload: string }
   | { type: 'LOGOUT' }
   | { type: 'CLEAR_ERROR' };
@@ -30,11 +30,7 @@ type AuthAction =
 const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'LOGIN_REQUEST':
-      return {
-        ...state,
-        loading: true,
-        error: null,
-      };
+      return { ...state, loading: true, error: null };
     case 'LOGIN_SUCCESS':
       return {
         ...state,
@@ -45,23 +41,11 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         error: null,
       };
     case 'LOGIN_FAILURE':
-      return {
-        ...state,
-        isAuthenticated: false,
-        user: null,
-        token: null,
-        loading: false,
-        error: action.payload,
-      };
+      return { ...state, isAuthenticated: false, user: null, token: null, loading: false, error: action.payload };
     case 'LOGOUT':
-      return {
-        ...initialState,
-      };
+      return { ...initialState };
     case 'CLEAR_ERROR':
-      return {
-        ...state,
-        error: null,
-      };
+      return { ...state, error: null };
     default:
       return state;
   }
@@ -77,48 +61,54 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [authState, dispatch] = useReducer(authReducer, initialState);
+  const [initialized, setInitialized] = useState(false);
 
-  // Login function
-const login = async (credentials: LoginCredentials) => {
-  try {
-    dispatch({ type: 'LOGIN_REQUEST' });
-    const data = await loginUser(credentials);
-    
-    if (!data.token) {
-      throw new Error('No token received from server');
+  // Login
+  const login = async (credentials: LoginCredentials) => {
+    try {
+      dispatch({ type: 'LOGIN_REQUEST' });
+      const data = await loginUser(credentials);
+
+      if (!data.token) throw new Error('No token received from server');
+
+      // Save token and user
+      await AsyncStorage.setItem('token', data.token);
+      await AsyncStorage.setItem('user', JSON.stringify({
+        id: data.id,
+        email: data.email,
+        name: data.name,
+        surname: data.surname,
+      }));
+
+      await TokenManager.setToken(data.token);
+
+      dispatch({
+        type: 'LOGIN_SUCCESS',
+        payload: {
+          user: {
+            id: data.id,
+            email: data.email,
+            name: data.name,
+            surname: data.surname,
+            token: data.token, // opsiyonel: gerekirse ekle
+          },
+          token: data.token,
+        },
+      });
+    } catch (error: any) {
+      console.error('Login error:', error);
+      dispatch({
+        type: 'LOGIN_FAILURE',
+        payload: error.message || 'Giriş başarısız oldu',
+      });
+      throw error;
     }
-    
-    console.log('Received token during login');
-    
-    // Store token in AsyncStorage
-    await AsyncStorage.setItem('token', data.token);
-    
-    // Also make sure TokenManager has the token
-    await TokenManager.setToken(data.token);
-    
-    console.log('Token stored successfully');
-    
-    dispatch({
-      type: 'LOGIN_SUCCESS',
-      payload: {
-        user: { id: data.id, email: credentials.email },
-        token: data.token,
-      },
-    });
-  } catch (error: any) {
-    console.error('Login error:', error);
-    dispatch({
-      type: 'LOGIN_FAILURE',
-      payload: error.message || 'Giriş başarısız oldu',
-    });
-    throw error;
-  }
-};
+  };
 
-  // Logout function
+  // Logout
   const logout = async () => {
-    // Remove token from storage
     await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('user');
     dispatch({ type: 'LOGOUT' });
   };
 
@@ -127,33 +117,34 @@ const login = async (credentials: LoginCredentials) => {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
-  const [initialized, setInitialized] = useState(false);
-
+  // Load token + user on startup
   const loadToken = async () => {
     try {
       const token = await AsyncStorage.getItem('token');
-      if (token) {
-        console.log('Found token in AsyncStorage during app startup');
-        
-        // Make sure TokenManager also has the token
+      const userJson = await AsyncStorage.getItem('user');
+
+      if (token && userJson) {
         await TokenManager.setToken(token);
-        
+        const user = JSON.parse(userJson);
+
         dispatch({
           type: 'LOGIN_SUCCESS',
           payload: {
-            user: null,
+            user,
             token,
           },
         });
       }
     } catch (error) {
-      console.error('Error loading token:', error);
+      console.error('Error loading token or user:', error);
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
+      dispatch({ type: 'LOGOUT' });
     } finally {
       setInitialized(true);
     }
   };
 
-  // Load token on context initialization
   React.useEffect(() => {
     loadToken();
   }, []);
@@ -173,10 +164,10 @@ const login = async (credentials: LoginCredentials) => {
   );
 };
 
-// Hook for using auth context
+// Hook
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;

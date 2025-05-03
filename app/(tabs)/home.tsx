@@ -1,16 +1,21 @@
 import React from 'react';
-import { SafeAreaView, ScrollView, View, Text, StyleSheet } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet } from 'react-native';
 import { HomeProvider } from '@/src/context/HomeContext';
 import HomeSelectorContainer from '@/src/components/HomeSelector/HomeSelector';
+import { useAuth } from '@/src/context/AuthContext'; // 👈 import the auth hook
 
 export default function HomeScreen() {
+  const { authState } = useAuth(); // 👈 get user from authState
+  const ownerId = authState.user?.id; // 👈 extract id safely
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollView}>
-        
-        <HomeProvider>
-          <HomeSelectorContainer />
-        </HomeProvider>
+        {ownerId && ( // 👈 render only when ownerId is available
+          <HomeProvider ownerId={ownerId}>
+            <HomeSelectorContainer />
+          </HomeProvider>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

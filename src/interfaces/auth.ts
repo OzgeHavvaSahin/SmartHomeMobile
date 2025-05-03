@@ -5,7 +5,7 @@ export interface LoginRequest {
   
 
   export interface LoginResponse {
-    id: string;
+    id: number;
     email: string;
     name : string;
     surname : string;
@@ -15,17 +15,12 @@ export interface LoginRequest {
 
 export interface AuthState {
   isAuthenticated: boolean;
-  user: User | null;
+  user: LoginResponse | null;
   token: string | null;
   loading: boolean;
   error: string | null;
 }
 
-export interface User {
-  id: string;
-  email: string;
-  name?: string;
-}
 
 export interface LoginCredentials {
   email: string;

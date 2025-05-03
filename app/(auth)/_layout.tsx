@@ -1,13 +1,16 @@
 import React from 'react';
 import { Stack } from 'expo-router';
+import { AuthProvider } from '@/src/context/AuthContext';
 
-export default function AuthLayout() {
+
+export default function RootLayout() {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-    {/* Auth screen components */}
-    <Stack.Screen name="signin" />
-    <Stack.Screen name="signup" />
-    {/* Add any other auth screens */}
-  </Stack>
+    <AuthProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </AuthProvider>
   );
 }

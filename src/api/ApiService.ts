@@ -21,6 +21,7 @@ export class TokenManager {
     try {
       await AsyncStorage.setItem(this.TOKEN_KEY, token);
       console.log('TokenManager.setToken() - Token stored');
+      console.log(token)
     } catch (error) {
       console.error('Error setting token:', error);
     }
